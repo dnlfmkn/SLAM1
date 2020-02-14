@@ -8,13 +8,13 @@
 ;   - Add direction control logic for autonomous vehicle.
 ;**************************************************************************
     
-#include <p16f877a.inc> 
-#define  IN4 RB2 
-#define  IN3 RB3
-#define  EN3_4 RB4
-#define  IN2 RB5
-#define  IN1 RB6
-#define  EN1_2 RB7    
+#include <p16f877.inc> 
+;#define  IN4 RB2 
+;#define  IN3 RB3
+;#define  EN3_4 RB4
+;#define  IN2 RB5
+;#define  IN1 RB6
+;#define  EN1_2 RB7    
 
 ;--------------------------------------------------------------------------
 ; Set Configuration Bits (Disable Watchdog Timer)
@@ -22,7 +22,16 @@
 ; CONFIG
 ; __config 0xFFFB
   __CONFIG _FOSC_EXTRC & _WDTE_OFF & _PWRTE_OFF & _BOREN_ON & _LVP_ON & _CPD_OFF & _WRT_OFF & _CP_OFF
+STATUS	EQU    0x03
+PORTB	EQU    0x06
+TRISB	EQU    0x86
 
+EN1_2	EQU    0x07
+IN1	EQU    0x06	
+IN2	EQU    0x05	
+EN3_4   EQU    0x04
+IN3	EQU    0x03
+IN4     EQU    0x02
 ;--------------------------------------------------------------------------
 ;   Allocate memory blocks for delay variables.
 ;--------------------------------------------------------------------------
@@ -33,6 +42,7 @@
 		       Kount100us
 		       Kount10ms
 		       Kount1s
+		       Kount5
 		ENDC
 		
 ;--------------------------------------------------------------------------
@@ -41,7 +51,6 @@
 
 		org	    0x0000
 		goto	    start
-
 		nop
 		nop
 		nop
@@ -50,15 +59,13 @@
 ;--------------------------------------------------------------------------
 ;				MAIN
 ;--------------------------------------------------------------------------
-start		    bcf		STATUS, RP1  ; ensure we can either be in bank 0/1
-		    bsf		STATUS, RP0  ; switch to bank 1 to access TRISB
-		    movlw	0xFC
-		    movwf	TRISB	     ; make ports 2-7 of PORTB outputs
-		    bcf		STATUS, RP0  ; switch to bank 0 to access PORTB
-		    movlw	0x00
-		    movwf	PORTB	     ; deactivate all output ports
+start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
+		    bsf		STATUS, 0x05  ; switch to bank 1 to access TRISB
+		    movlw	0x01
+		    movwf	TRISB	      ; make pins 2-7 of PORTB outputs
+		    banksel     PORTB	      ; switch to the bank containing PORTB
+		    clrf	PORTB	      ; deactivate all pins of PORTB	
 		
-Kount5	    equ	    0x30	     ; allocating memory for a counter (5)
 		    movlw	0x05
 		    movwf	Kount5
 		
@@ -85,7 +92,7 @@ lft_turn_fwd_test   call	left_turn_fwd
 lft_turn_rev_test   call	left_turn_rev
 		    decfsz	Kount5
 		    goto	lft_turn_rev_test    
-		
+	
 stop		    goto	stop		   ; inf loop to avoid garbage writes
 						
 
@@ -149,7 +156,7 @@ rt_turn_rev	bsf	PORTB, EN3_4
 ; Left-turn (forward) logic			  
 ;--------------------------------------------------------------------------
 		
-left_turn_fwd   bcf	PORTB, EN1_2
+left_turn_fwd   bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
 		bcf	PORTB, IN2
@@ -162,7 +169,7 @@ left_turn_fwd   bcf	PORTB, EN1_2
 ; Left-turn (reverse) logic			  
 ;--------------------------------------------------------------------------
 	
-left_turn_rev	bcf	PORTB, EN1_2
+left_turn_rev	bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
 		bcf	PORTB, IN2
