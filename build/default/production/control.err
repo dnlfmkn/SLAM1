@@ -1,11 +1,14 @@
 Message[301] C:\PROGRAM FILES (X86)\MICROCHIP\MPLABX\V5.15\MPASMX\P16F877.INC 34 : MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
-Message[302] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 65 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 73 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 78 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 83 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 88 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 93 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 188 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 196 : Using default destination of 1 (file).
-Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 207 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 149 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 157 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 168 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 181 : Using default destination of 1 (file).
+Message[302] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 193 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 195 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 206 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 213 : Using default destination of 1 (file).
 Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 220 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 227 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 234 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 241 : Using default destination of 1 (file).
+Message[302] C:\USERS\DANIEL\MPLABXPROJECTS\SLAM1.X\CONTROL.ASM 245 : Register in operand not in bank 0.  Ensure that bank bits are correct.

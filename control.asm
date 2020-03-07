@@ -9,13 +9,6 @@
 ;**************************************************************************
     
 #include <p16f877.inc> 
-;#define  IN4 RB2 
-;#define  IN3 RB3
-;#define  EN3_4 RB4
-;#define  IN2 RB5
-;#define  IN1 RB6
-;#define  EN1_2 RB7    
-
 ;--------------------------------------------------------------------------
 ; Set Configuration Bits (Disable Watchdog Timer)
 ;--------------------------------------------------------------------------
@@ -32,6 +25,14 @@ IN2	EQU    0x05
 EN3_4   EQU    0x04
 IN3	EQU    0x03
 IN4     EQU    0x02
+     
+ALL_FWD_LED	   EQU    0x00	    ; red PORTD pins
+ALL_REV_LED	   EQU    0x01	    ; green
+RT_TRN_FWD_LED     EQU    0x02	    ; yellow
+RT_TRN_REV_LED	   EQU    0x03	    ; white
+LFT_TRN_FWD_LED	   EQU    0x04	    ; blue
+LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
+    
 ;--------------------------------------------------------------------------
 ;   Allocate memory blocks for delay variables.
 ;--------------------------------------------------------------------------
@@ -56,46 +57,6 @@ IN4     EQU    0x02
 		nop
 		nop	
 		
-;--------------------------------------------------------------------------
-;				MAIN
-;--------------------------------------------------------------------------
-start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
-		    bsf		STATUS, 0x05  ; switch to bank 1 to access TRISB
-		    movlw	0x01
-		    movwf	TRISB	      ; make pins 2-7 of PORTB outputs
-		    banksel     PORTB	      ; switch to the bank containing PORTB
-		    clrf	PORTB	      ; deactivate all pins of PORTB	
-		
-		    movlw	0x05
-		    movwf	Kount5
-		
-all_fwd_test	    call	all_forward
-		    decfsz	Kount5
-		    goto	all_fwd_test
-		    movlw	0x05
-		    movwf	Kount5
-all_rev_test	    call	all_reverse
-		    decfsz	Kount5
-		    goto	all_rev_test
-		    movlw	0x05
-		    movwf	Kount5
-rt_turn_fwd_test    call	rt_turn_fwd
-		    decfsz	Kount5
-		    goto	rt_turn_fwd_test
-		    movlw	0x05
-		    movwf	Kount5
-lft_turn_fwd_test   call	left_turn_fwd
-		    decfsz	Kount5
-		    goto	lft_turn_fwd_test
-		    movlw	0x05
-		    movwf	Kount5
-lft_turn_rev_test   call	left_turn_rev
-		    decfsz	Kount5
-		    goto	lft_turn_rev_test    
-	
-stop		    goto	stop		   ; inf loop to avoid garbage writes
-						
-
 ;--------------------------------------------------------------------------
 ;			  ALL-FORWARD LOGIC
 ;--------------------------------------------------------------------------
@@ -222,7 +183,67 @@ impl_1s
 		nop
 		nop
 		return
-		END
+		
+;--------------------------------------------------------------------------
+;				MAIN
+;--------------------------------------------------------------------------
+start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
+		    bsf		STATUS, 0x05  ; switch to bank 1 to access TRISB
+		    movlw	0x01
+		    movwf	TRISB	      ; make pins 2-7 of PORTB outputs
+		    movlw       0x00
+		    movwf       TRISD	      ; make pins 0-6 of PORTD outputs       
+		    banksel     PORTB	      ; switch to the bank containing PORTB
+		    clrf	PORTB	      ; deactivate all pins of PORTB
+		    banksel     PORTD
+		    clrf        PORTD
+		
+		    movlw	0x05
+		    movwf	Kount5
+		
+all_fwd_test	    call	all_forward
+		    bsf		PORTD, ALL_FWD_LED 
+		    decfsz	Kount5
+		    goto	all_fwd_test
+		    movlw	0x05
+		    movwf	Kount5
+		    bcf		PORTD, ALL_FWD_LED
+all_rev_test	    call	all_reverse
+		    bsf         PORTD, ALL_REV_LED
+		    decfsz	Kount5
+		    goto	all_rev_test
+		    movlw	0x05
+		    movwf	Kount5
+		    bcf         PORTD, ALL_REV_LED   
+rt_turn_fwd_test    call	rt_turn_fwd
+		    bsf         PORTD, RT_TRN_FWD_LED
+		    decfsz	Kount5
+		    goto	rt_turn_fwd_test
+		    movlw	0x05
+		    movwf	Kount5
+		    bcf         PORTD, RT_TRN_FWD_LED
+rt_turn_rev_test    call	rt_turn_rev
+		    bsf         PORTD, RT_TRN_REV_LED
+		    decfsz	Kount5
+		    goto	rt_turn_rev_test
+		    movlw	0x05
+		    movwf	Kount5
+		    bcf         PORTD, RT_TRN_REV_LED		    
+lft_turn_fwd_test   call	left_turn_fwd
+		    bsf         PORTD, LFT_TRN_FWD_LED
+		    decfsz	Kount5
+		    goto	lft_turn_fwd_test
+		    movlw	0x05
+		    movwf	Kount5
+		    bcf         PORTD, LFT_TRN_FWD_LED
+lft_turn_rev_test   call	left_turn_rev
+		    bsf         PORTD, LFT_TRN_REV_LED
+		    decfsz	Kount5
+		    goto	lft_turn_rev_test  
+		    bcf         PORTD, LFT_TRN_REV_LED
+		    movlw	0xFF
+		    movwf       TRISB
+		    END
 
 
 
