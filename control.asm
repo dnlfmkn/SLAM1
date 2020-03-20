@@ -58,6 +58,17 @@ LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
 		nop	
 		
 ;--------------------------------------------------------------------------
+;			  SENSOR LOGIC
+;--------------------------------------------------------------------------
+;**************************************************************************
+; The first step is to read and convert the analog values obtained by the
+; sensor. 
+; These values will be converted to their digital equivalent by the ADC module
+; of the PIC.
+;****************************************************************************
+		
+		
+;--------------------------------------------------------------------------
 ;			  ALL-FORWARD LOGIC
 ;--------------------------------------------------------------------------
 		
