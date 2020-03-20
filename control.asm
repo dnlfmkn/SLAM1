@@ -15,16 +15,26 @@
 ; CONFIG
 ; __config 0xFFFB
   __CONFIG _FOSC_EXTRC & _WDTE_OFF & _PWRTE_OFF & _BOREN_ON & _LVP_ON & _CPD_OFF & _WRT_OFF & _CP_OFF
+;-------------------------------------------------------------------------------
+;				SYSTEM-DEFINED/RESERVED NAMES
+;-------------------------------------------------------------------------------
 STATUS	EQU    0x03
 PORTB	EQU    0x06
 TRISB	EQU    0x86
+TRISA   EQU    0x85  
+PIE1	EQU    0x8C
+ADCON0  EQU    0x1F
 
+;-------------------------------------------------------------------------------
+;			    USER-DEFINED PORT ALIASES
+;-------------------------------------------------------------------------------
 EN1_2	EQU    0x07
 IN1	EQU    0x06	
 IN2	EQU    0x05	
 EN3_4   EQU    0x04
 IN3	EQU    0x03
 IN4     EQU    0x02
+ADIE	EQU    0x06		    ; 6th bit of PIE1 interrupt register     
      
 ALL_FWD_LED	   EQU    0x00	    ; red PORTD pins
 ALL_REV_LED	   EQU    0x01	    ; green
@@ -34,7 +44,7 @@ LFT_TRN_FWD_LED	   EQU    0x04	    ; blue
 LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
     
 ;--------------------------------------------------------------------------
-;   Allocate memory blocks for delay variables.
+;		Allocate memory blocks for delay variables.
 ;--------------------------------------------------------------------------
  
 		CBLOCK 0x20
@@ -56,6 +66,18 @@ LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
 		nop
 		nop
 		nop	
+		
+;--------------------------------------------------------------------------
+;			  SENSOR LOGIC
+;--------------------------------------------------------------------------
+;**************************************************************************
+; Reference: [http://www.mwftr.com/ucF08/LEC15%20PIC%20AD.pdf]
+;		
+; The first step is to configure the A/D logic. [See the `start` label]
+; These values will be converted to their digital equivalent by the ADC module
+; of the PIC.
+;****************************************************************************
+		
 		
 ;--------------------------------------------------------------------------
 ;			  ALL-FORWARD LOGIC
@@ -191,12 +213,28 @@ start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
 		    bsf		STATUS, 0x05  ; switch to bank 1 to access TRISB
 		    movlw	0x01
 		    movwf	TRISB	      ; make pins 2-7 of PORTB outputs
+		    
 		    movlw       0x00
 		    movwf       TRISD	      ; make pins 0-6 of PORTD outputs       
 		    banksel     PORTB	      ; switch to the bank containing PORTB
 		    clrf	PORTB	      ; deactivate all pins of PORTB
 		    banksel     PORTD
 		    clrf        PORTD
+		    
+init		    movlw	0xFF	      ; initializing A/D module
+		    banksel     TRISA	      ; select bank that has port A	
+		    movwf	PORTA	      ; port A pins are outputs	
+		    
+		    banksel     PIE1
+		    bcf		PIE1, ADIE    ; clear PIE1[ADIE] to disable 
+					      ; converter interrupt
+		    banksel     ADCON0	      ; ADC operation configuration
+		    movlw	0xC9
+		    movwf	ADCON0
+		    
+		    banksel     ADCON1	      ; ADC result configuration 
+		    movlw       0x80	      ; this byte sets the result as
+		    movwf       ADCON1	      ; right-justified in ADRESH-ADRESL
 		
 		    movlw	0x05
 		    movwf	Kount5
