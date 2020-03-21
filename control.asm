@@ -5,7 +5,7 @@
 ;			    CONTROL
 ;**************************************************************************
 ; Aim:
-;   - Add direction control logic for autonomous vehicle.
+;   - Add direction control and sensing logic for autonomous vehicle.
 ;**************************************************************************
     
 #include <p16f877.inc> 
@@ -50,7 +50,7 @@ LFT_TRN_FWD_LED	   EQU    0x04	    ; blue
 LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
     
 ;--------------------------------------------------------------------------
-;		Allocate memory blocks for delay variables.
+;		Allocate memory blocks for delay variables and sensor.
 ;--------------------------------------------------------------------------
  
 		CBLOCK 0x20
@@ -80,7 +80,8 @@ LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
 ;			  ALL-FORWARD LOGIC
 ;--------------------------------------------------------------------------
 		
-all_forward     bsf	PORTB, EN1_2	    ; turn on all enables
+all_forward     
+		bsf	PORTB, EN1_2	    ; turn on all enables
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1	    ; clear IN1 & IN3 and set IN2 & IN 4 to set  
 		bsf	PORTB, IN2	    ; left and right axes forward respectively
@@ -93,7 +94,8 @@ all_forward     bsf	PORTB, EN1_2	    ; turn on all enables
 ;			  ALL-REVERSE LOGIC
 ;--------------------------------------------------------------------------
 		
-all_reverse	bsf	PORTB, EN1_2	    ; turn on all enables
+all_reverse	
+		bsf	PORTB, EN1_2	    ; turn on all enables
 		bsf	PORTB, EN3_4
 		bsf	PORTB, IN1	    ; set IN1 & IN3 and clear IN2 & IN 4 to set  
 		bcf	PORTB, IN2	    ; left and right axes in reverse respectively
@@ -108,7 +110,8 @@ all_reverse	bsf	PORTB, EN1_2	    ; turn on all enables
 ; Right-turn (forward) logic			  
 ;--------------------------------------------------------------------------
 		
-rt_turn_fwd	bsf	PORTB, EN3_4
+rt_turn_fwd	
+		bsf	PORTB, EN3_4
 		bsf	PORTB, EN1_2
 		bcf	PORTB, IN3
 		bcf	PORTB, IN4
@@ -121,7 +124,8 @@ rt_turn_fwd	bsf	PORTB, EN3_4
 ; Right-turn (reverse) logic			  
 ;--------------------------------------------------------------------------
 		
-rt_turn_rev	bsf	PORTB, EN3_4
+rt_turn_rev	
+		bsf	PORTB, EN3_4
 		bsf	PORTB, EN1_2
 		bcf	PORTB, IN3
 		bcf	PORTB, IN4
@@ -136,7 +140,8 @@ rt_turn_rev	bsf	PORTB, EN3_4
 ; Left-turn (forward) logic			  
 ;--------------------------------------------------------------------------
 		
-left_turn_fwd   bsf	PORTB, EN1_2
+left_turn_fwd   
+		bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
 		bcf	PORTB, IN2
@@ -149,7 +154,8 @@ left_turn_fwd   bsf	PORTB, EN1_2
 ; Left-turn (reverse) logic			  
 ;--------------------------------------------------------------------------
 	
-left_turn_rev	bsf	PORTB, EN1_2
+left_turn_rev	
+		bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
 		bcf	PORTB, IN2
@@ -235,7 +241,8 @@ impl_1s
 ; This is *PID control.*
 ;-------------------------------------------------------------------------------
 		
-test_distance_thresh	movlw  ADC_RES
+test_distance_thresh	    
+		        movlw  ADC_RES
 			subwf  BANG_BANG_THRESH
 			skpnc			; if carry bit is clear, then ADC result > threshold
 			nop
@@ -248,11 +255,13 @@ test_distance_thresh	movlw  ADC_RES
 ;			    ADC CONVERSION
 ;-------------------------------------------------------------------------------
 		
-adc		call    delay10ms
+adc		
+		call    delay10ms
 		banksel	ADCON0
 		bsf	ADCON0, GO	; triggers the AD conversion
  
-adcloop         btfsc   ADCON0, GO	; wait for conversion to be done
+adcloop         
+		btfsc   ADCON0, GO	; wait for conversion to be done
 		goto	adcloop
 		bcf	PIR1, ADIF	; clear conversion finished bit
 		movf	ADRESH, 0	; writes result from ADRESH to W register
@@ -261,7 +270,8 @@ adcloop         btfsc   ADCON0, GO	; wait for conversion to be done
 ;--------------------------------------------------------------------------
 ;				MAIN
 ;--------------------------------------------------------------------------
-start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
+start		    
+		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
 		    bsf		STATUS, 0x05  ; switch to bank 1 to access TRISB
 		    movlw	0x01
 		    movwf	TRISB	      ; make pins 2-7 of PORTB outputs
@@ -273,7 +283,8 @@ start		    bcf		STATUS, 0x06  ; ensure we can either be in bank 0/1
 		    banksel     PORTD
 		    clrf        PORTD
 		    
-init		    movlw	0xFF	      ; initializing A/D module
+init		    
+		    movlw	0xFF	      ; initializing A/D module
 		    banksel     TRISA	      ; select bank that has port A	
 		    movwf	PORTA	      ; port A pins are outputs	
 		    
@@ -294,59 +305,67 @@ init		    movlw	0xFF	      ; initializing A/D module
 		    movlw	0x05
 		    movwf	Kount5
 
-loop		    banksel     PIR1	      ; PIR1 register contains result of A/D conversion
+loop		    
+		    banksel     PIR1	      ; PIR1 register contains result of A/D conversion
 		    bcf		PIR1, ADIF    ; clear ADIF bit to start the next conversion
 		    banksel     ADC_RES
 		    clrf	ADC_RES	      ; clear conversion result for next run of ADC
 		    call        adc	      	
 		    banksel	ADC_RES
-			movwf	ADC_RES	           ; after `adc` routine runs, ADC result will be
+		    movwf	ADC_RES	           ; after `adc` routine runs, ADC result will be
 						   ; written to W register which we can access
 						   ; and use to determine the next course of
 						   ; action
 		    call	test_distance_thresh
-test_keep_moving    andwf	SHOULD_MOVE        ; test if should_move is zero
+test_keep_moving    
+		    andwf	SHOULD_MOVE        ; test if should_move is zero
 		    skpz
 		    nop
 		    call	determine_next_direction
 		    goto	loop
 		
-all_fwd_test	    call	all_forward
+all_fwd_test	    
+		    call	all_forward
 		    bsf		PORTD, ALL_FWD_LED 
 		    decfsz	Kount5
 		    goto	all_fwd_test
 		    movlw	0x05
 		    movwf	Kount5
 		    bcf		PORTD, ALL_FWD_LED
-all_rev_test	    call	all_reverse
+all_rev_test	    
+		    call	all_reverse
 		    bsf         PORTD, ALL_REV_LED
 		    decfsz	Kount5
 		    goto	all_rev_test
 		    movlw	0x05
 		    movwf	Kount5
 		    bcf         PORTD, ALL_REV_LED   
-rt_turn_fwd_test    call	rt_turn_fwd
+rt_turn_fwd_test    
+		    call	rt_turn_fwd
 		    bsf         PORTD, RT_TRN_FWD_LED
 		    decfsz	Kount5
 		    goto	rt_turn_fwd_test
 		    movlw	0x05
 		    movwf	Kount5
 		    bcf         PORTD, RT_TRN_FWD_LED
-rt_turn_rev_test    call	rt_turn_rev
+rt_turn_rev_test    
+		    call	rt_turn_rev
 		    bsf         PORTD, RT_TRN_REV_LED
 		    decfsz	Kount5
 		    goto	rt_turn_rev_test
 		    movlw	0x05
 		    movwf	Kount5
 		    bcf         PORTD, RT_TRN_REV_LED		    
-lft_turn_fwd_test   call	left_turn_fwd
+lft_turn_fwd_test   
+		    call	left_turn_fwd
 		    bsf         PORTD, LFT_TRN_FWD_LED
 		    decfsz	Kount5
 		    goto	lft_turn_fwd_test
 		    movlw	0x05
 		    movwf	Kount5
 		    bcf         PORTD, LFT_TRN_FWD_LED
-lft_turn_rev_test   call	left_turn_rev
+lft_turn_rev_test   
+		    call	left_turn_rev
 		    bsf         PORTD, LFT_TRN_REV_LED
 		    decfsz	Kount5
 		    goto	lft_turn_rev_test  
