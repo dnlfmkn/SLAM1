@@ -81,6 +81,7 @@ LFT_TRN_REV_LED	   EQU    0x05	    ; red again because LED colors are limited
 ;--------------------------------------------------------------------------
 		
 all_forward     
+		banksel PORTB
 		bsf	PORTB, EN1_2	    ; turn on all enables
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1	    ; clear IN1 & IN3 and set IN2 & IN 4 to set  
@@ -95,6 +96,7 @@ all_forward
 ;--------------------------------------------------------------------------
 		
 all_reverse	
+		banksel PORTB 
 		bsf	PORTB, EN1_2	    ; turn on all enables
 		bsf	PORTB, EN3_4
 		bsf	PORTB, IN1	    ; set IN1 & IN3 and clear IN2 & IN 4 to set  
@@ -111,6 +113,7 @@ all_reverse
 ;--------------------------------------------------------------------------
 		
 rt_turn_fwd	
+		banksel PORTB
 		bsf	PORTB, EN3_4
 		bsf	PORTB, EN1_2
 		bcf	PORTB, IN3
@@ -125,6 +128,7 @@ rt_turn_fwd
 ;--------------------------------------------------------------------------
 		
 rt_turn_rev	
+		banksel PORTB
 		bsf	PORTB, EN3_4
 		bsf	PORTB, EN1_2
 		bcf	PORTB, IN3
@@ -141,6 +145,7 @@ rt_turn_rev
 ;--------------------------------------------------------------------------
 		
 left_turn_fwd   
+		banksel PORTB
 		bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
@@ -155,6 +160,7 @@ left_turn_fwd
 ;--------------------------------------------------------------------------
 	
 left_turn_rev	
+		banksel PORTB
 		bsf	PORTB, EN1_2
 		bsf	PORTB, EN3_4
 		bcf	PORTB, IN1
@@ -164,10 +170,25 @@ left_turn_rev
 		call	delay1s
 		return
 		
+;---------------------------------------------------------------------------
+;			    STOP LOGIC
+;---------------------------------------------------------------------------
+
+stop_wheels	
+		banksel PORTB
+		bsf	PORTB, EN1_2
+		bsf	PORTB, EN3_4
+		bcf	PORTB, IN1
+		bcf	PORTB, IN2
+		bcf	PORTB, IN3
+		bcf	PORTB, IN4
+		call	delay1s
+		return
+		
 ;--------------------------------------------------------------------------
 ;			ONE SECOND DELAY LOGIC
 ;--------------------------------------------------------------------------
-delay99_6us		             ; runs for 498 cycles <-> 99.6us
+delay99_6us	 	            ; runs for 498 cycles <-> 99.6us
 		movlw	0xA5         ; move 165'd to W register
 		movwf	Kount99_6us  ; move 165'd to GPR
 impl_99_6us
@@ -245,12 +266,24 @@ test_distance_thresh
 		        movlw  ADC_RES
 			subwf  BANG_BANG_THRESH
 			skpnc			; if carry bit is clear, then ADC result > threshold
-			nop
+			return
 			clrf   SHOULD_MOVE	; clear the signal to keep moving
 			return
 		
+;*******************************************************************************
+;			    DETERMINING THE NEXT DIRECTION
+;*******************************************************************************
+; This will be implemented for the sensor facing the forward direction.
 ;-------------------------------------------------------------------------------
-		
+
+determine_next_direction    
+			    andwf	SHOULD_MOVE        ; test if should_move is zero
+			    skpz
+			    call	all_forward	   ; if not zero keep moving forward 
+			    call	stop_wheels
+			    return			   ; else stop current movement routine 
+							   ; and return 
+							   
 ;-------------------------------------------------------------------------------
 ;			    ADC CONVERSION
 ;-------------------------------------------------------------------------------
@@ -312,15 +345,11 @@ loop
 		    clrf	ADC_RES	      ; clear conversion result for next run of ADC
 		    call        adc	      	
 		    banksel	ADC_RES
-		    movwf	ADC_RES	           ; after `adc` routine runs, ADC result will be
-						   ; written to W register which we can access
-						   ; and use to determine the next course of
-						   ; action
+		    movwf	ADC_RES	      ; after `adc` routine runs, ADC result will be
+					      ; written to W register which we can access
+					      ; and use to determine the next course of action		 
 		    call	test_distance_thresh
-test_keep_moving    
-		    andwf	SHOULD_MOVE        ; test if should_move is zero
-		    skpz
-		    nop
+keep_moving    
 		    call	determine_next_direction
 		    goto	loop
 		
